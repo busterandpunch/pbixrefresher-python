@@ -18,8 +18,10 @@ def main():
 	parser.add_argument("workbook", help = "Path to .pbix file")
 	parser.add_argument("--workspace", help = "name of online Power BI service work space to publish in", default = "My workspace")
 	parser.add_argument("--refresh-timeout", help = "refresh timeout", default = 30000, type = int)
-	parser.add_argument("--no-publish", dest='publish', help="don't publish, just save", default = True, action = 'store_false' )
+	parser.add_argument("--no-publish", dest='publish', help="don't publish, just save", default = True, action = 'store_false')
 	parser.add_argument("--init-wait", help = "initial wait time on startup", default = 15, type = int)
+	parser.add_argument("--no-open", dest='open', help = "don't close all open Power BI instances and open workbook, just connect to first running instance", default = True, action = 'store_false')
+	parser.add_argument("--no-close", dest='close', help = "don't close Power BI on completion", default = True, action = 'store_false')
 	args = parser.parse_args()
 
 	timings.after_clickinput_wait = 1
@@ -28,19 +30,21 @@ def main():
 	INIT_WAIT = args.init_wait
 	REFRESH_TIMEOUT = args.refresh_timeout
 
-	# Kill running PBI
-	PROCNAME = "PBIDesktop.exe"
-	for proc in psutil.process_iter():
-		# check whether the process name matches
-		if proc.name() == PROCNAME:
-			proc.kill()
-	time.sleep(3)
+	# Open workbook exclusively
+	if args.open:
+		# Kill running PBI
+		PROCNAME = "PBIDesktop.exe"
+		for proc in psutil.process_iter():
+			# check whether the process name matches
+			if proc.name() == PROCNAME:
+				proc.kill()
+		time.sleep(3)
 
-	# Start PBI and open the workbook
-	print("Starting Power BI")
-	os.system('start "" "' + WORKBOOK + '"')
-	print("Waiting ",INIT_WAIT,"sec")
-	time.sleep(INIT_WAIT)
+		# Start PBI and open the workbook
+		print("Starting Power BI")
+		os.system('start "" "' + WORKBOOK + '"')
+		print("Waiting ",INIT_WAIT,"sec")
+		time.sleep(INIT_WAIT)
 
 	# Connect pywinauto
 	print("Identifying Power BI window")
@@ -56,6 +60,8 @@ def main():
 
 	# Refresh
 	print("Refreshing")
+	
+	win.set_focus()
 	win.Refresh.click_input()
 	#wait_win_ready(win)
 	time.sleep(5)
@@ -72,6 +78,7 @@ def main():
 	# Publish
 	if args.publish:
 		print("Publish")
+		win.set_focus()
 		win.Publish.click_input()
 		publish_dialog = win.child_window(auto_id = "KoPublishToGroupDialog")
 		publish_dialog.child_window(title = WORKSPACE).click_input()
@@ -85,15 +92,16 @@ def main():
 		win["Got it"].wait('visible', timeout = REFRESH_TIMEOUT)
 		win["Got it"].click_input()
 
-	#Close
-	print("Exiting")
-	win.close()
+	# Close
+	if args.close:
+		print("Exiting")
+		win.close()
 
-	# Force close
-	for proc in psutil.process_iter():
-		if proc.name() == PROCNAME:
-			proc.kill()
-
+		# Force close
+		for proc in psutil.process_iter():
+			if proc.name() == PROCNAME:
+				proc.kill()
+				
 		
 if __name__ == '__main__':
 	try:

@@ -5,3 +5,8 @@ pbix
 pbixrefresher.egg-info
 pypi.txt
 sample.pbix
+cli.spec
+pbixrefresher-bp.spec
+pbixrefresher/__pycache__/__init__.cpython-38.pyc
+pbixrefresher/__pycache__/pbixrefresher.cpython-38.pyc
+__pycache__/cli.cpython-38.pyc
