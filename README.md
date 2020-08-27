@@ -62,7 +62,8 @@ no-close - don't close the instance after completion.
 This is still flakey as anything because of Power BI's massive load.
 
 Building single exe
+strangely psutil isn't picked up, add to hidden-import list
 ```
 pip install pyinstaller
-pyinstaller cli.py --name pbixrefresher-bp --onefile
+pyinstaller cli.py --name pbixrefresher-bp --onefile --hidden-import=psutil
 ```

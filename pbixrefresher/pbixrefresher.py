@@ -29,11 +29,11 @@ def main():
 	WORKSPACE = args.workspace
 	INIT_WAIT = args.init_wait
 	REFRESH_TIMEOUT = args.refresh_timeout
+	PROCNAME = "PBIDesktop.exe"
 
 	# Open workbook exclusively
 	if args.open:
-		# Kill running PBI
-		PROCNAME = "PBIDesktop.exe"
+		# Kill running PBI	
 		for proc in psutil.process_iter():
 			# check whether the process name matches
 			if proc.name() == PROCNAME:
